@@ -194,8 +194,6 @@ PRAISONAI_MAX_RETRY_COUNT=3
 
 ### Azure Container Apps
 
-See [deployment guide](https://github.com/MervinPraison/PraisonAI-SVC/blob/main/docs/deployment.md) for full instructions.
-
 Quick deploy:
 
 ```bash
@@ -271,7 +269,6 @@ praisonai-svc/
 │   └── azure/                  # Azure integrations
 ├── tests/                      # Test suite (20 tests)
 ├── examples/                   # Example services
-├── defensive-packages/         # Typosquatting protection
 ├── pyproject.toml              # Package configuration
 ├── Dockerfile                  # Container image
 └── LICENSE                     # MIT License
@@ -488,7 +485,7 @@ MIT License - see [LICENSE](./LICENSE) file
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md)
+Contributions welcome! Please open an issue or pull request on GitHub.
 
 ## Support
 
