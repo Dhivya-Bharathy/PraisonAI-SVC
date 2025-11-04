@@ -34,14 +34,18 @@ class QueueManager:
 
     async def enqueue_job(self, job_id: str, payload: dict) -> None:
         """Add job to queue."""
+        import asyncio
         message = json.dumps({"job_id": job_id, "payload": payload})
-        self.queue_client.send_message(
-            message, visibility_timeout=self.config.queue_visibility_timeout
+        await asyncio.to_thread(
+            self.queue_client.send_message,
+            message
         )
 
     async def receive_messages(self, max_messages: int = 1) -> list[QueueMessage]:
         """Receive messages from queue."""
-        messages = self.queue_client.receive_messages(
+        import asyncio
+        messages = await asyncio.to_thread(
+            self.queue_client.receive_messages,
             max_messages=max_messages,
             visibility_timeout=self.config.queue_visibility_timeout,
         )
@@ -49,11 +53,20 @@ class QueueManager:
 
     async def delete_message(self, message: QueueMessage) -> None:
         """Delete message from queue."""
-        self.queue_client.delete_message(message.id, message.pop_receipt)
+        import asyncio
+        await asyncio.to_thread(
+            self.queue_client.delete_message,
+            message.id,
+            message.pop_receipt
+        )
 
     async def move_to_poison_queue(self, message: QueueMessage) -> None:
         """Move message to poison queue."""
-        self.poison_queue_client.send_message(message.content)
+        import asyncio
+        await asyncio.to_thread(
+            self.poison_queue_client.send_message,
+            message.content
+        )
         await self.delete_message(message)
 
     def get_queue_length(self) -> int:

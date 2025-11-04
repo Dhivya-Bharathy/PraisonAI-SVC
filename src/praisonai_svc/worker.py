@@ -3,7 +3,7 @@
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from praisonai_svc.azure import BlobStorage, QueueManager, TableStorage
@@ -85,7 +85,7 @@ class Worker:
             # Check for timeout
             job = await self.table_storage.get_job(job_id)
             if job and job.StartedUTC:
-                elapsed = datetime.utcnow() - job.StartedUTC
+                elapsed = datetime.now(timezone.utc) - job.StartedUTC
                 max_duration = timedelta(minutes=self.config.max_job_duration_minutes)
                 if elapsed > max_duration:
                     logger.warning(f"Job {job_id} timed out")

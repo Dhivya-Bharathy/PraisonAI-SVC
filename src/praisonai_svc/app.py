@@ -123,3 +123,30 @@ class ServiceApp:
     def get_app(self) -> FastAPI:
         """Get FastAPI application instance."""
         return self.app
+
+    def run(self, host: str = "0.0.0.0", port: int = 8080) -> None:
+        """Run the service with both API and worker.
+        
+        This starts:
+        1. Worker in a background thread
+        2. FastAPI server in the main thread
+        """
+        import asyncio
+        import threading
+        import uvicorn
+        from praisonai_svc.worker import run_worker
+
+        if not self.job_handler:
+            raise RuntimeError("No job handler registered. Use @app.job decorator.")
+
+        # Start worker in background thread
+        def start_worker():
+            asyncio.run(run_worker(self.config, self.job_handler))
+
+        worker_thread = threading.Thread(target=start_worker, daemon=True)
+        worker_thread.start()
+        print(f"✅ Worker started for {self.service_name}")
+
+        # Start API server in main thread
+        print(f"✅ API server starting on http://{host}:{port}")
+        uvicorn.run(self.app, host=host, port=port)

@@ -1,11 +1,10 @@
-"""CLI commands for praisonai-svc."""
+"""CLI commands for PraisonAI Service Framework."""
 
 import click
-import uvicorn
 
 
 @click.group()
-@click.version_option(version="1.0.0")
+@click.version_option(version="1.1.0")
 def main() -> None:
     """PraisonAI Service Framework CLI."""
     pass
@@ -14,16 +13,35 @@ def main() -> None:
 @main.command()
 @click.option("--host", default="0.0.0.0", help="Host to bind to")
 @click.option("--port", default=8080, help="Port to bind to")
-@click.option("--reload", is_flag=True, help="Enable auto-reload")
-def run(host: str, port: int, reload: bool) -> None:
-    """Run the service locally."""
-    click.echo(f"Starting service on {host}:{port}")
-    uvicorn.run(
-        "app:app",
-        host=host,
-        port=port,
-        reload=reload,
-    )
+def run(host: str, port: int) -> None:
+    """Run the service locally (loads handlers.py)."""
+    import sys
+    from pathlib import Path
+    
+    # Check if handlers.py exists
+    handlers_file = Path("handlers.py")
+    if not handlers_file.exists():
+        click.echo("❌ Error: handlers.py not found in current directory")
+        click.echo("Run this command from your service directory")
+        sys.exit(1)
+    
+    # Load handlers.py and run the app
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("handlers", handlers_file)
+        if spec and spec.loader:
+            handlers = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(handlers)
+            
+            # Get the app from handlers and run it
+            if hasattr(handlers, 'app'):
+                handlers.app.run(host=host, port=port)
+            else:
+                click.echo("❌ Error: No 'app' found in handlers.py")
+                sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Error loading handlers.py: {e}")
+        sys.exit(1)
 
 
 @main.command()
@@ -44,7 +62,11 @@ def new(service_name: str, package: str | None) -> None:
         f'''"""Handler for {service_name} service."""
 
 import io
+from dotenv import load_dotenv
 from praisonai_svc import ServiceApp
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = ServiceApp("{service_name}")
 
@@ -70,8 +92,7 @@ def process_job(payload: dict) -> tuple[bytes, str, str]:
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app.get_app(), host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080)
 '''
     )
 

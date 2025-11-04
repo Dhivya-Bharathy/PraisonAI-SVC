@@ -1,6 +1,6 @@
 [project]
 name = "praisonai-svc"
-version = "1.0.0"
+version = "1.1.0"
 description = "A unified framework that turns any PraisonAI Python package into a web service on Azure"
 readme = "README.md"
 authors = [
@@ -34,6 +34,7 @@ dependencies = [
     "tenacity>=9.0.0",
     "python-multipart>=0.0.12",
     "httpx>=0.27.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]

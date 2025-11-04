@@ -32,6 +32,4 @@ def generate_ppt(payload: dict) -> tuple[bytes, str, str]:
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app.get_app(), host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080)
