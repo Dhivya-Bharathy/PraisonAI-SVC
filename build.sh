@@ -46,6 +46,58 @@ fi
 echo ""
 echo "✅ Build complete!"
 echo ""
+
+# GitHub Release (optional)
+echo "🚀 GitHub Release"
+echo ""
+read -p "Create GitHub release for v$VERSION? (y/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Check if gh CLI is installed
+    if ! command -v gh &> /dev/null; then
+        echo "❌ GitHub CLI (gh) not installed"
+        echo "   Install: brew install gh"
+        echo "   Or visit: https://cli.github.com/"
+    else
+        # Check if authenticated
+        if ! gh auth status &> /dev/null; then
+            echo "🔐 Authenticating with GitHub..."
+            gh auth login
+        fi
+        
+        # Check if release already exists
+        if gh release view "v$VERSION" &> /dev/null; then
+            echo "⚠️  Release v$VERSION already exists on GitHub"
+            read -p "   Delete and recreate? (y/N): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                echo "Deleting existing release..."
+                gh release delete "v$VERSION" --yes
+                echo "   ✓ Deleted old release"
+            else
+                echo "   Skipping release creation"
+                echo ""
+                echo "💡 To update assets only:"
+                echo "   gh release upload v$VERSION ./dist/* --clobber"
+                return
+            fi
+        fi
+        
+        # Generate release notes from git log
+        echo "📝 Generating release notes..."
+        
+        # Create release
+        echo "Creating release v$VERSION..."
+        gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --generate-notes \
+            ./dist/*
+        
+        echo "✅ GitHub release created: https://github.com/MervinPraison/PraisonAI-SVC/releases/tag/v$VERSION"
+    fi
+fi
+
+echo ""
 echo "Next steps:"
 echo "  Test:    ./publish.sh --test --token YOUR_TOKEN"
 echo "  Publish: ./publish.sh --token YOUR_TOKEN"
